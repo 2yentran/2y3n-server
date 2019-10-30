@@ -3,9 +3,10 @@ import Pokemon from '../lib/pokemon';
 
 const router = Router();
 
-router.get('/search', (req, res) => {
-	const pokemon = new Pokemon();
-	res.json(pokemon.find(req.body.search));
+router.get('/', async (req, res) => {
+  const pokemon = new Pokemon();
+  const output = await pokemon.find(req.query.search);
+  res.json(output);
 });
 
 export default router;

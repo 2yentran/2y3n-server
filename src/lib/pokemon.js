@@ -11,8 +11,13 @@ class Pokemon {
       const { data } = await axios.get(`https://pokeapi.co/api/v2/pokemon/${search}`);
       return await this.updateSpeciesData(data);
     } catch (e) {
+      console.log(`tuyen1: ${e.message}`)
       // Next search by type if regular search fails
-      return this.findByType(search);
+      if (!parseInt(search)) {
+        return this.findByType(search);
+      }
+
+      return null;
     }
   }
 
@@ -23,24 +28,26 @@ class Pokemon {
    */
   async findByType(search) {
     try {
-      const { data } = await axios.get('https://pokeapi.co/api/v2/type/' + search);
+      const { data } = await axios.get(`https://pokeapi.co/api/v2/type/${search}`);
       const pokemons = [];
 
       // Check each Pokemon found for type
-      data.pokemon.forEach((pokemon) => {
+      for (let pokemon of data.pokemon) {
         // Sample URL: https://pokeapi.co/api/v2/pokemon/147/
         const id = pokemon.pokemon.url.slice(34, -1);
 
         // TODO: check to see if we need to do this
         // Search for each Pokemon by id.
-        const pokemon = await this.getPokemon(id);
-        if (pokemon !== null) {
-          pokemons[id] = pokemon;
-        }
-      });
+        pokemon = await this.find(id);
 
-      return pokemons;
+        if (pokemon) {
+          pokemons.push(pokemon);
+        }
+      }
+
+      return await pokemons;
     } catch (e) {
+      console.log(`tuyen2: ${e.message}`)
       // None found
       return null;
     }
@@ -52,14 +59,13 @@ class Pokemon {
    * @param search
    */
   async getSpecies(search) {
-    return axios.get('https://pokeapi.co/api/v2/pokemon-species/' + search, (data, response) => {
-        if (response.statusCode != 200) {
-          return null; // Nothing found
-        } else {
-          return data;
-        }
-      }
-    );
+    try {
+      const { data } = await axios.get(`https://pokeapi.co/api/v2/pokemon-species/${search}`);
+      return await data;
+    } catch (e) {
+      console.log(`tuyen3: ${e.message}`)
+      return null;
+    }
   }
 
   /**
@@ -71,14 +77,8 @@ class Pokemon {
     // Need to get information about the Pokemon's habitat and flavor text
     const species = await this.getSpecies(pokemon.species.name);
 
-    if (species === null) {
-      return null;
-    }
-
-    if (species !== null) {
-      pokemon.habitat = species.habitat.name;
-
-      
+    if (species) {
+      pokemon.habitat = species.habitat ? species.habitat.name : '';
 
       const englishTextEntry = species.flavor_text_entries.find((textEntry) => {
         return textEntry.language.name === 'en';

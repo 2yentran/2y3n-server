@@ -6,6 +6,7 @@ import logger from 'morgan';
 import OktaJwtVerifier from '@okta/jwt-verifier';
 import mongoose from 'mongoose'
 
+import pokemonsRouter from './routes/pokemons';
 import postsRouter from './routes/posts';
 import usersRouter from './routes/users';
 
@@ -52,6 +53,7 @@ connection.once('open', () => {
   console.log('MongoDB database connection established successfully');
 })**/
 
+app.use('/pokemons', pokemonsRouter);
 app.use('/posts', postsRouter);
 app.use('/users', usersRouter);
 
